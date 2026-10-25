@@ -1,0 +1,45 @@
+name: Desplegar en el PaaS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: despliegue-inventario
+  cancel-in-progress: false
+
+jobs:
+  desplegar:
+    name: Construir y desplegar inventario en tenant-alpha
+    runs-on: [self-hosted, paas]
+    timeout-minutes: 25
+    env:
+      TENANT: tenant-alpha
+      APP: inventario
+      HOST: inventario.paas.local
+      SALUD: /up
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Construir la imagen desde el Dockerfile y desplegar con el CLI del PaaS
+        run: |
+          export PAAS_TAG="${GITHUB_SHA::7}-${GITHUB_RUN_NUMBER}"
+          "$HOME/paas-lab/fase2-helm/paas-deploy.sh" "$TENANT" paas/values.yaml --build .
+
+      - name: Comprobar el despliegue
+        run: |
+          kubectl -n "$TENANT" rollout status "deploy/$APP" --timeout=180s
+          kubectl -n "$TENANT" get pods -l "app.kubernetes.io/name=$APP" -o wide
+          echo "Imagen en ejecución: $(kubectl -n "$TENANT" get deploy "$APP" -o jsonpath='{.spec.template.spec.containers[0].image}')"
+          codigo=$(curl -s -o /dev/null -w '%{http_code}' -m 20 -H "Host: $HOST" "http://$(minikube ip)$SALUD")
+          echo "http://$HOST$SALUD respondió HTTP $codigo"
+          test "$codigo" = "200"
+
+      - name: Limpiar imágenes antiguas (conserva las 3 últimas)
+        if: success()
+        run: |
+          minikube image ls | grep "paas/tenant-alpha-inventario:" | sed 's#^docker.io/##' \
+            | awk -F- '{print $NF, $0}' | sort -n | cut -d' ' -f2- \
+            | head -n -3 | xargs -r -n1 minikube image rm || true
