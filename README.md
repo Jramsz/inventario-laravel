@@ -1,6 +1,6 @@
 # Inventario · PHP / Laravel + MySQL
 
-CRUD de productos desarrollado en **Laravel 11 (PHP 8.3)** con base de datos **MySQL 8.4**, desplegado en el PaaS multi-tenant sobre Kubernetes (inquilino `tenant-alpha`).
+CRUD de productos desarrollado en **Laravel 12 (PHP 8.3)** con base de datos **MySQL 8.4**, desplegado en el PaaS multi-tenant sobre Kubernetes (inquilino `tenant-alpha`).
 
 **URL:** http://inventario.paas.local
 
@@ -17,7 +17,7 @@ CRUD de productos desarrollado en **Laravel 11 (PHP 8.3)** con base de datos **M
 
 ## Estructura
 
-Este repositorio contiene sólo el código propio de la aplicación. El `Dockerfile` parte del esqueleto oficial de Laravel 11 (`composer create-project`) y copia encima estos archivos:
+Este repositorio contiene sólo el código propio de la aplicación. El `Dockerfile` parte del esqueleto oficial de Laravel 12 (`composer create-project`) y copia encima estos archivos:
 
 ```
 app/Models/Producto.php                    Modelo Eloquent
@@ -38,7 +38,7 @@ No hay credenciales en este repositorio. Las variables llegan al contenedor desd
 
 | Variable | Origen |
 |---|---|
-| `APP_NAME`, `APP_ENV`, `APP_DEBUG`, `LOG_CHANNEL`, `DB_CONNECTION`, `SESSION_DRIVER`, `CACHE_STORE` | `paas/values.yaml` → ConfigMap |
+| `APP_NAME`, `APP_ENV`, `APP_DEBUG`, `LOG_CHANNEL`, `DB_CONNECTION`, `SESSION_DRIVER`, `CACHE_STORE`, `SESSION_COOKIE` | `paas/values.yaml` → ConfigMap |
 | `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` | Secret `bd-credenciales`, generado por la plataforma |
 | `APP_KEY` | Secret `app-secretos`, generado por la plataforma |
 
