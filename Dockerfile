@@ -1,7 +1,9 @@
 FROM composer:2 AS vendor
 WORKDIR /build
-RUN composer create-project --no-dev --no-interaction --prefer-dist --no-scripts --ignore-platform-reqs laravel/laravel:^12.0 app
+RUN composer create-project --no-install --no-interaction --prefer-dist --no-scripts laravel/laravel:^12.0 app
 WORKDIR /build/app
+RUN composer config platform.php 8.3.30 \
+ && composer update --no-dev --no-interaction --prefer-dist --no-scripts --ignore-platform-req='ext-*'
 COPY app ./app
 COPY bootstrap/app.php ./bootstrap/app.php
 COPY database ./database
