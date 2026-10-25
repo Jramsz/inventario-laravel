@@ -33,9 +33,16 @@ jobs:
           kubectl -n "$TENANT" rollout status "deploy/$APP" --timeout=180s
           kubectl -n "$TENANT" get pods -l "app.kubernetes.io/name=$APP" -o wide
           echo "Imagen en ejecución: $(kubectl -n "$TENANT" get deploy "$APP" -o jsonpath='{.spec.template.spec.containers[0].image}')"
-          codigo=$(curl -s -o /dev/null -w '%{http_code}' -m 20 -H "Host: $HOST" "http://$(minikube ip)$SALUD")
-          echo "http://$HOST$SALUD respondió HTTP $codigo"
-          test "$codigo" = "200"
+          URL="http://$(minikube ip)$SALUD"
+          for intento in $(seq 1 12); do
+            codigo=$(curl -s -o /tmp/salud-$APP.txt -w '%{http_code}' -m 10 -H "Host: $HOST" "$URL" || true)
+            echo "Intento $intento: http://$HOST$SALUD respondió HTTP $codigo"
+            [ "$codigo" = "200" ] && exit 0
+            sleep 5
+          done
+          head -c 600 /tmp/salud-$APP.txt; echo
+          kubectl -n "$TENANT" logs "deploy/$APP" --tail=40
+          exit 1
 
       - name: Limpiar imágenes antiguas (conserva las 3 últimas)
         if: success()
