@@ -1,6 +1,6 @@
 FROM composer:2 AS vendor
 WORKDIR /build
-RUN composer create-project --no-dev --no-interaction --prefer-dist --no-scripts --ignore-platform-reqs laravel/laravel:^11.0 app
+RUN composer create-project --no-dev --no-interaction --prefer-dist --no-scripts --ignore-platform-reqs laravel/laravel:^12.0 app
 WORKDIR /build/app
 COPY app ./app
 COPY bootstrap/app.php ./bootstrap/app.php
